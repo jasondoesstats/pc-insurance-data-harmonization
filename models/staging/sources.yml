@@ -1,0 +1,30 @@
+version: 2
+
+sources:
+  - name: raw_customer_a
+    database: eco-spirit-487105-m6
+    schema: raw_customer_a
+    description: "Raw Guidewire PolicyCenter and ClaimCenter data from Keystone Mutual"
+    tables:
+      - name: policies
+        description: "Policy-level data including coverage, premium, and underwriting details"
+      - name: claims
+        description: "Claim-level data including loss details, status, and adjuster assignments"
+      - name: claimants
+        description: "Claimant-level data including injury and demographic details"
+      - name: transactions
+        description: "Financial transactions including reserves, payments, and recoveries"
+
+  - name: raw_customer_b
+    database: eco-spirit-487105-m6
+    schema: raw_customer_b
+    description: "Raw Guidewire PolicyCenter and ClaimCenter data from Great Lakes Insurance"
+    tables:
+      - name: policies
+        description: "Policy-level data with different naming conventions and coding systems"
+      - name: claims
+        description: "Claim-level data using abbreviated status codes and numeric cause of loss codes"
+      - name: claimants
+        description: "Claimant-level data with uppercase descriptions and abbreviated body part codes"
+      - name: transactions
+        description: "Financial transactions using abbreviated type and cost category codes"
