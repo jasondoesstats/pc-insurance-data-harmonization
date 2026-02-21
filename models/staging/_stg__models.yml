@@ -1,0 +1,99 @@
+version: 2
+
+models:
+  - name: stg_customer_a__policies
+    description: "Staged policy data from Keystone Mutual"
+    columns:
+      - name: policy_id
+        description: "Unique policy identifier"
+        tests:
+          - unique
+          - not_null
+      - name: line_of_business
+        tests:
+          - accepted_values:
+              values: ['WC', 'CA', 'GL']
+
+  - name: stg_customer_a__claims
+    description: "Staged claims data from Keystone Mutual"
+    columns:
+      - name: claim_id
+        tests:
+          - unique
+          - not_null
+      - name: policy_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customer_a__policies')
+              field: policy_id
+
+  - name: stg_customer_a__claimants
+    description: "Staged claimant data from Keystone Mutual"
+    columns:
+      - name: claimant_id
+        tests:
+          - unique
+          - not_null
+      - name: claim_id
+        tests:
+          - not_null
+
+  - name: stg_customer_a__transactions
+    description: "Staged financial transactions from Keystone Mutual"
+    columns:
+      - name: transaction_id
+        tests:
+          - unique
+          - not_null
+      - name: claim_id
+        tests:
+          - not_null
+
+  - name: stg_customer_b__policies
+    description: "Staged policy data from Great Lakes Insurance"
+    columns:
+      - name: policy_id
+        tests:
+          - unique
+          - not_null
+      - name: line_of_business
+        tests:
+          - accepted_values:
+              values: ['WorkersComp', 'CommAuto', 'GenLiab']
+
+  - name: stg_customer_b__claims
+    description: "Staged claims data from Great Lakes Insurance"
+    columns:
+      - name: claim_id
+        tests:
+          - unique
+          - not_null
+      - name: policy_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customer_b__policies')
+              field: policy_id
+
+  - name: stg_customer_b__claimants
+    description: "Staged claimant data from Great Lakes Insurance"
+    columns:
+      - name: claimant_id
+        tests:
+          - unique
+          - not_null
+      - name: claim_id
+        tests:
+          - not_null
+
+  - name: stg_customer_b__transactions
+    description: "Staged financial transactions from Great Lakes Insurance"
+    columns:
+      - name: transaction_id
+        tests:
+          - unique
+          - not_null
+      - name: claim_id
+        tests:
+          - not_null
