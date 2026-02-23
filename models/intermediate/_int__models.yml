@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: int_policies_unified
+    description: "Harmonized policy data from all customers with standardized LOB codes, status values, and state abbreviations"
+    columns:
+      - name: policy_id
+        tests:
+          - not_null
+      - name: line_of_business
+        tests:
+          - accepted_values:
+              values: ['WC', 'CA', 'GL']
+      - name: state
+        description: "Two-letter state abbreviation"
+        tests:
+          - not_null
+
+  - name: int_claims_unified
+    description: "Harmonized claims data with standardized status codes, cause of loss descriptions, and computed report lag"
+    columns:
+      - name: claim_id
+        tests:
+          - not_null
+      - name: policy_id
+        tests:
+          - not_null
+      - name: claim_status
+        tests:
+          - accepted_values:
+              values: ['O', 'C', 'R']
+      - name: cause_of_loss
+        description: "Standardized cause of loss description mapped from reference table"
+
+  - name: int_claimants_unified
+    description: "Harmonized claimant data with standardized injury types, body parts, and gender values"
+    columns:
+      - name: claimant_id
+        tests:
+          - not_null
+      - name: claim_id
+        tests:
+          - not_null
+      - name: gender
+        tests:
+          - accepted_values:
+              values: ['Male', 'Female']
+
+  - name: int_transactions_unified
+    description: "Harmonized financial transactions with standardized transaction types and cost categories"
+    columns:
+      - name: transaction_id
+        tests:
+          - not_null
+      - name: claim_id
+        tests:
+          - not_null
+      - name: transaction_type
+        tests:
+          - accepted_values:
+              values: ['Payment', 'Reserve', 'Recovery', 'Reserve Change']

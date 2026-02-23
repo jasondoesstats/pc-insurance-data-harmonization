@@ -13,7 +13,7 @@ renamed as (
         cost_category as cost_type,
         cast(txn_amount as numeric) as amount,
         cast(txn_dt as date) as transaction_date,
-        nullif(check_num, '') as check_number,
+        cast(check_num as string) as check_number,
         'customer_b' as source_customer
 
     from source
