@@ -42,7 +42,7 @@ seeds/                 # Reference/lookup CSVs managed by dbt
 
 ## Lineage
 
-![DAG](assets/lineage.png)
+![DAG](lineage_pc_data_harmonization.png)
 
 ## Transformation Layers
 
