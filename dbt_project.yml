@@ -39,3 +39,5 @@ models:
   pc_insurance_data_harmonization:
     staging:
       +materialized: table
+    marts:
+      +materialized: table

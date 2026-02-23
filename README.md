@@ -1,84 +1,68 @@
-# Synthetic P&C Insurance Dataset — Multi-Customer Harmonization
+# P&C Insurance Data Harmonization
 
-## Overview
+A dbt project demonstrating end-to-end data harmonization across two fictional P&C insurance carriers using Guidewire-style PolicyCenter and ClaimCenter data. The pipeline transforms raw, inconsistently structured source data into a unified, modeling-ready claims dataset.
 
-This dataset simulates data from **two fictional P&C insurance carriers** using Guidewire PolicyCenter and ClaimCenter, each with different naming conventions, coding systems, and data quality characteristics. It's designed to practice **data harmonization, profiling, feature engineering, and modeling dataset creation** — the core work of building unified analytics across multiple Guidewire customers.
+## Problem
 
-## Structure
+Insurance carriers configure Guidewire differently — column naming conventions, code values, status indicators, and data quality all vary by implementation. Before any predictive modeling can happen, this data must be profiled, standardized, and unified into a common schema.
 
-```
-insurance_data/
-├── customer_a/          # "Keystone Mutual" — PA-based regional carrier
-│   ├── policies.csv     # 2,000 policies (WC, Commercial Auto, GL)
-│   ├── claims.csv       # 800 claims
-│   ├── claimants.csv    # 900 claimants
-│   └── transactions.csv # 2,500 financial transactions
-├── customer_b/          # "Great Lakes Insurance" — IL-based regional carrier
-│   ├── policies.csv     # 1,500 policies (same lines, different conventions)
-│   ├── claims.csv       # 650 claims
-│   ├── claimants.csv    # 720 claimants
-│   └── transactions.csv # 2,000 financial transactions
-└── reference/           # Shared lookup/mapping tables
-    ├── cause_of_loss.csv
-    ├── states.csv
-    └── wc_class_codes.csv
-```
+## Data Sources
 
-## Harmonization Challenges (by design)
-
-These inconsistencies between Customer A and Customer B are intentional and mirror real-world Guidewire implementation differences:
+Two simulated Guidewire customers with intentionally different conventions:
 
 | Dimension | Customer A (Keystone Mutual) | Customer B (Great Lakes Insurance) |
 |---|---|---|
-| **Column naming** | CamelCase (`PolicyNumber`, `ClaimStatus`) | snake_case (`pol_id`, `claim_status`) |
-| **LOB codes** | Short codes: `WC`, `CA`, `GL` | Descriptive: `WorkersComp`, `CommAuto`, `GenLiab` |
-| **State format** | Abbreviations: `PA`, `NJ` | Full names: `Illinois`, `Wisconsin` |
-| **Claim status** | Descriptive: `Open`, `Closed`, `Reopened` | Single-letter: `O`, `C`, `R` |
-| **Cause of loss** | Text descriptions | Numeric/alphanumeric codes (needs reference table) |
-| **Gender** | `M` / `F` | `Male` / `Female` / `Unknown` |
-| **Litigation flag** | `Y` / `N` | `1` / `0` |
-| **Fraud/SIU flag** | `Y` / `N` | `True` / `False` |
-| **Null handling** | Standard nulls | Mix of nulls, empty strings, and `99`/`Unknown` sentinels |
-| **Injury descriptions** | Mixed case | ALL CAPS |
-| **Body part codes** | Full names | Abbreviated + numeric codes |
-| **Transaction types** | Descriptive: `Payment`, `Reserve` | Abbreviated: `PMT`, `RSV` |
-| **Cost types** | Full names: `Indemnity`, `Medical` | Codes: `IND`, `MED`, `DCC`, `AO` |
+| Column naming | CamelCase | snake_case |
+| LOB codes | `WC`, `CA`, `GL` | `WorkersComp`, `CommAuto`, `GenLiab` |
+| State format | Abbreviations (`PA`, `NJ`) | Full names (`Illinois`, `Wisconsin`) |
+| Claim status | `Open`, `Closed`, `Reopened` | `O`, `C`, `R` |
+| Cause of loss | Text descriptions | Numeric/alphanumeric codes |
+| Boolean flags | `Y` / `N` | `1` / `0`, `True` / `False` |
+| Null handling | Standard nulls | Mix of nulls, empty strings, sentinel values |
 
-## Data Quality Issues
+Each customer has four source tables: policies, claims, claimants, and transactions. Three shared reference tables (seeds) provide lookup mappings.
 
-- **Customer A**: Relatively clean. Nulls in `FraudIndicator`, `InjuryType`, `BodyPart`, `Gender`.
-- **Customer B**: More data quality issues — nulls in `total_premium`, `producer_code`, `uw_id`, `adjuster`. Empty strings mixed with nulls in `injury_desc`, `body_part_code`, `check_num`. Sentinel value `99` in body part codes.
-
-## Table Relationships
+## Project Structure
 
 ```
-policies (1) ──→ (many) claims
-claims   (1) ──→ (many) claimants
-claims   (1) ──→ (many) transactions
+models/
+├── staging/           # Light cleanup: renaming, type casting, null standardization
+│   ├── customer_a/    # 4 models (policies, claims, claimants, transactions)
+│   ├── customer_b/    # 4 models
+│   └── reference/     # 3 models (states, cause_of_loss, wc_class_codes)
+├── intermediate/      # Harmonization: value mapping, unioning, enrichment
+│   ├── int_policies_unified.sql
+│   ├── int_claims_unified.sql
+│   ├── int_claimants_unified.sql
+│   └── int_transactions_unified.sql
+└── marts/             # Modeling-ready output
+    └── fct_claims_modeling.sql
+seeds/                 # Reference/lookup CSVs managed by dbt
 ```
 
-Join keys:
-- Customer A: `PolicyNumber` → `ClaimNumber`
-- Customer B: `pol_id` → `claim_id`
+## Lineage
 
-## Lines of Business
+![DAG](assets/lineage.png)
 
-- **Workers' Compensation (WC)**: ~40-45% of policies. NCCI class codes.
-- **Commercial Auto (CA)**: ~30-35% of policies. Vehicle class codes.
-- **General Liability (GL)**: ~20-30% of policies. GL class codes.
+## Transformation Layers
 
-## Suggested Project Scope
+**Staging** - One model per source table. Renames columns to a consistent snake_case schema, casts types, standardizes nulls (empty strings and sentinel values like `99` converted to null), and tags each row with `source_customer`.
 
-1. **Stage** raw CSVs from both customers
-2. **Profile** data quality and document findings
-3. **Harmonize** into a unified schema (standardize column names, code values, null handling)
-4. **Build features** for a claims severity model (e.g., claim duration, report lag, payment velocity, litigation rate by class code)
-5. **Create** a final modeling-ready dataset joining policy, claim, claimant, and aggregated transaction data
+**Intermediate** — Unions Customer A and Customer B into a single table per entity. Maps differing code values to a common standard (LOB codes, statuses, state abbreviations, transaction types, cost categories, injury descriptions). Joins reference tables for cause of loss lookups and state mapping. Computes report lag.
 
-## Date Ranges
+**Mart** — Joins all unified tables into a single claim-level fact table with features for severity modeling:
+- Policy attributes (LOB, class code, premium, renewal count)
+- Claim attributes (status, cause of loss, litigation flag, report lag)
+- Claimant features (count, injury indicators, body part flags)
+- Financial features (total paid, reserves, recoveries, incurred, cost breakdowns by type)
+- Derived features (days to first payment, claim duration, legal/medical cost ratios, reserve adequacy ratio)
 
-- Policy effective dates: 2021–2024
-- Claims and transactions: 2021–2024
+## Testing
+
+Schema tests are defined at each layer covering:
+- Primary key uniqueness and not-null constraints
+- Accepted values for standardized fields (LOB codes, claim statuses, transaction types)
+- Referential integrity between policies and claims
 
 ## Production Considerations
 
@@ -87,3 +71,13 @@ In a production environment, this project would benefit from additional dbt feat
 - **Snapshots**: Implementing snapshots on claim status and reserve amounts would enable tracking how claims develop over time — critical for loss development analysis and reserve adequacy monitoring.
 - **Macros**: As the number of customers grows beyond two, repeated mapping logic (LOB codes, status values, state formats) would be extracted into reusable macros to keep the codebase DRY and maintainable.
 - **Incremental models**: The transaction and claims models would be materialized as incremental rather than full table rebuilds, improving performance as data volumes scale.
+
+## How to Run
+
+1. Clone this repo
+2. Configure a BigQuery connection in your dbt profile
+3. Load source CSVs into `raw_customer_a` and `raw_customer_b` datasets
+4. `dbt seed` to load reference tables
+5. `dbt run` to build all models
+6. `dbt test` to validate
+7. `dbt docs generate && dbt docs serve` to view documentation and lineage
