@@ -1,0 +1,19 @@
+cause_code,cause_description,line_of_business
+52,Strain/Sprain,WC
+14,Fall/Slip,WC
+31,Struck By Object,WC
+60,Cut/Puncture/Laceration,WC
+55,Burn/Scald,WC
+40,Repetitive Motion,WC
+10,Motor Vehicle Accident,WC
+COL-01,Rear End Collision,CA
+COL-02,Sideswipe Collision,CA
+COL-03,Intersection Collision,CA
+COL-04,Parking Lot Incident,CA
+COL-05,Single Vehicle Accident,CA
+COL-06,Head On Collision,CA
+GL-SLIP,Slip and Fall,GL
+GL-PROD,Product Liability,GL
+GL-PROP,Property Damage,GL
+GL-BI,Bodily Injury,GL
+GL-ADV,Advertising Injury,GL

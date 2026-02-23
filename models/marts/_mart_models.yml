@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: fct_claims_modeling
+    description: "Claim-level modeling-ready dataset combining harmonized policy, claim, claimant, and transaction data with derived features for severity modeling"
+    columns:
+      - name: claim_id
+        description: "Unique claim identifier"
+        tests:
+          - unique
+          - not_null
+      - name: policy_id
+        tests:
+          - not_null
+      - name: line_of_business
+        tests:
+          - accepted_values:
+              values: ['WC', 'CA', 'GL']
+      - name: total_incurred
+        description: "Total incurred amount (paid + reserves + recoveries)"
+      - name: report_lag_days
+        description: "Days between loss date and report date"
+      - name: days_to_first_payment
+        description: "Days between loss date and first payment"
+      - name: legal_cost_ratio
+        description: "Proportion of total paid allocated to legal costs"
+      - name: medical_cost_ratio
+        description: "Proportion of total paid allocated to medical costs"
+      - name: reserve_adequacy_ratio
+        description: "Ratio of total paid to total reserves - values above 1.0 indicate reserve deficiency"
+      - name: claim_duration_days
+        description: "Days between loss date and most recent transaction"
+      - name: reserve_change_count
+        description: "Number of reserve changes - proxy for claim complexity"
