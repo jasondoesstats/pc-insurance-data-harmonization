@@ -17,7 +17,7 @@ models:
           - accepted_values:
               values: ['WC', 'CA', 'GL']
       - name: total_incurred
-        description: "Total incurred amount (paid + reserves + recoveries)"
+        description: "Total incurred amount (paid + reserves - recoveries)"
       - name: report_lag_days
         description: "Days between loss date and report date"
       - name: days_to_first_payment
