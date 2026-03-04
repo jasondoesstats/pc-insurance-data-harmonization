@@ -62,7 +62,7 @@ enriched as (
 
     select
         u.*,
-        c.cause_description as cause_of_loss,
+        coalesce(c.cause_description, u.cause_of_loss_raw) as cause_of_loss,
         date_diff(u.report_date, u.loss_date, day) as report_lag_days
 
     from unioned u
