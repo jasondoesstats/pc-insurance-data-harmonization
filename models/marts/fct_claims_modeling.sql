@@ -36,7 +36,7 @@ transactions as (
         sum(case when transaction_type = 'Recovery' then amount else 0 end) as total_recoveries,
 
         sum(case when transaction_type in ('Payment', 'Reserve') then amount else 0 end)
-            - sum(case when transaction_type = 'Recovery' then amount else 0 end) as total_incurred,
+            + sum(case when transaction_type = 'Recovery' then amount else 0 end) as total_incurred,
 
         sum(case when cost_type = 'Indemnity' and transaction_type = 'Payment' then amount else 0 end) as indemnity_paid,
         sum(case when cost_type = 'Medical' and transaction_type = 'Payment' then amount else 0 end) as medical_paid,
