@@ -75,7 +75,7 @@ In a production environment, this project would benefit from additional dbt feat
 ## How to Run
 
 1. Clone this repo
-2. Configure a BigQuery connection in your dbt profile
+2. Configure a BigQuery/Redshift/Snowflake connection in your dbt profile
 3. Load source CSVs into `raw_customer_a` and `raw_customer_b` datasets
 4. `dbt seed` to load reference tables
 5. `dbt run` to build all models
